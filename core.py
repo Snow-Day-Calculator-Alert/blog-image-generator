@@ -134,6 +134,12 @@ def fetch_pollinations(prompt, seed, size=1024, model="flux", timeout=240):
     raise RuntimeError(f"Pollinations failed after retries: {last_err}")
 
 
+# Gemini image models, tried in order (Google retires old ones regularly).
+# gemini-2.5-flash-image = free-tier native image generation (stable).
+# gemini-3.1-flash-image  = "Nano Banana 2", current mainstream GA model.
+GEMINI_IMAGE_MODELS = ["gemini-2.5-flash-image", "gemini-3.1-flash-image"]
+
+
 def fetch_gemini(prompt, seed, api_key):
     """Gemini free tier (AI Studio key). Needs: pip install google-genai"""
     try:
@@ -142,16 +148,28 @@ def fetch_gemini(prompt, seed, api_key):
     except ImportError:
         raise RuntimeError("google-genai not installed. Run: pip install google-genai")
     client = genai.Client(api_key=api_key)
-    resp = client.models.generate_content(
-        model="gemini-2.0-flash-preview-image-generation",
-        contents=f"{prompt} (variation seed {seed})",
-        config=types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"]),
-    )
-    for part in resp.candidates[0].content.parts:
-        inline = getattr(part, "inline_data", None)
-        if inline and inline.data:
-            return Image.open(io.BytesIO(inline.data)).convert("RGB")
-    raise RuntimeError("Gemini returned no image.")
+    last_err = "unknown"
+    for model in GEMINI_IMAGE_MODELS:
+        try:
+            resp = client.models.generate_content(
+                model=model,
+                contents=f"{prompt} (variation seed {seed})",
+                config=types.GenerateContentConfig(response_modalities=["TEXT", "IMAGE"]),
+            )
+            for part in resp.candidates[0].content.parts:
+                inline = getattr(part, "inline_data", None)
+                if inline and inline.data:
+                    return Image.open(io.BytesIO(inline.data)).convert("RGB")
+            last_err = f"{model}: no image in response"
+        except Exception as e:  # noqa: BLE001
+            last_err = f"{model}: {e}"
+    raise RuntimeError(f"Gemini failed: {last_err}")
+            last_err = str(e)
+        time.sleep(3)
+    raise RuntimeError(f"Pollinations failed after retries: {last_err}")
+
+
+
 
 
 def generate_illustration(prompt, seed, provider="pollinations", size=1024, model="flux", api_key=None):
