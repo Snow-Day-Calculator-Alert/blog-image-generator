@@ -23,21 +23,21 @@ OUT_DIR = os.path.join(BASE, "output")
 # 15 colour themes. `panel` = dark side/bottom panel, `accent` = highlight bar,
 # `palette` = words injected into the image prompt so the illustration matches.
 THEMES = [
-    {"id": "navy",     "name": "Navy Blue",     "panel": (23, 37, 66),   "accent": (56, 189, 248),  "palette": "deep navy blue and sky cyan"},
-    {"id": "emerald",  "name": "Emerald Green", "panel": (6, 60, 45),    "accent": (52, 211, 153),  "palette": "emerald green and mint"},
-    {"id": "violet",   "name": "Violet",        "panel": (46, 24, 90),   "accent": (167, 139, 250), "palette": "violet purple and lavender"},
-    {"id": "crimson",  "name": "Crimson Red",   "panel": (90, 18, 26),   "accent": (248, 113, 113), "palette": "crimson red and soft rose"},
-    {"id": "amber",    "name": "Amber Gold",    "panel": (80, 45, 8),    "accent": (251, 191, 36),  "palette": "amber orange and warm gold"},
-    {"id": "teal",     "name": "Teal",          "panel": (12, 62, 66),   "accent": (45, 212, 191),  "palette": "teal and turquoise"},
-    {"id": "indigo",   "name": "Indigo",        "panel": (30, 35, 90),   "accent": (129, 140, 248), "palette": "indigo blue and periwinkle"},
-    {"id": "rose",     "name": "Rose Pink",     "panel": (88, 22, 52),   "accent": (251, 113, 133), "palette": "rose pink and magenta"},
-    {"id": "slate",    "name": "Slate Gray",    "panel": (30, 41, 59),   "accent": (148, 163, 184), "palette": "slate gray and silver blue"},
-    {"id": "forest",   "name": "Forest Green",  "panel": (20, 60, 35),   "accent": (134, 239, 172), "palette": "forest green and lime"},
-    {"id": "midnight", "name": "Midnight",      "panel": (15, 18, 45),   "accent": (96, 165, 250),  "palette": "midnight blue and electric blue"},
-    {"id": "copper",   "name": "Copper",        "panel": (70, 35, 15),   "accent": (251, 146, 60),  "palette": "burnt orange and copper"},
-    {"id": "burgundy", "name": "Burgundy",      "panel": (75, 20, 35),   "accent": (244, 114, 182), "palette": "burgundy wine and blush pink"},
-    {"id": "charcoal", "name": "Charcoal Gold", "panel": (28, 28, 32),   "accent": (250, 204, 21),  "palette": "charcoal black and gold"},
-    {"id": "steel",    "name": "Steel Blue",    "panel": (35, 60, 85),   "accent": (125, 211, 252), "palette": "steel blue and ice blue"},
+    {"id": "navy",     "name": "Navy Blue",     "panel": (23, 37, 66),   "accent": (56, 189, 248),  "palette": "deep navy blue and sky cyan", "avoid": "yellow, orange, red, dark or black background"},
+    {"id": "emerald",  "name": "Emerald Green", "panel": (6, 60, 45),    "accent": (52, 211, 153),  "palette": "emerald green and mint", "avoid": "red, purple, orange, dark or black background"},
+    {"id": "violet",   "name": "Violet",        "panel": (46, 24, 90),   "accent": (167, 139, 250), "palette": "violet purple and lavender", "avoid": "green, yellow, orange, dark or black background"},
+    {"id": "crimson",  "name": "Crimson Red",   "panel": (90, 18, 26),   "accent": (248, 113, 113), "palette": "crimson red and soft rose", "avoid": "green, blue, purple, dark or black background"},
+    {"id": "amber",    "name": "Amber Gold",    "panel": (80, 45, 8),    "accent": (251, 191, 36),  "palette": "amber orange and warm gold", "avoid": "blue, purple, green, dark or black background"},
+    {"id": "teal",     "name": "Teal",          "panel": (12, 62, 66),   "accent": (45, 212, 191),  "palette": "teal and turquoise", "avoid": "red, orange, purple, dark or black background"},
+    {"id": "indigo",   "name": "Indigo",        "panel": (30, 35, 90),   "accent": (129, 140, 248), "palette": "indigo blue and periwinkle", "avoid": "green, yellow, orange, dark or black background"},
+    {"id": "rose",     "name": "Rose Pink",     "panel": (88, 22, 52),   "accent": (251, 113, 133), "palette": "rose pink and magenta", "avoid": "green, blue, dark or black background"},
+    {"id": "slate",    "name": "Slate Gray",    "panel": (30, 41, 59),   "accent": (148, 163, 184), "palette": "slate gray and silver blue", "avoid": "bright saturated colors, dark or black background"},
+    {"id": "forest",   "name": "Forest Green",  "panel": (20, 60, 35),   "accent": (134, 239, 172), "palette": "forest green and lime", "avoid": "red, purple, pink, dark or black background"},
+    {"id": "midnight", "name": "Midnight",      "panel": (15, 18, 45),   "accent": (96, 165, 250),  "palette": "midnight blue and electric blue", "avoid": "yellow, orange, green, gray background"},
+    {"id": "copper",   "name": "Copper",        "panel": (70, 35, 15),   "accent": (251, 146, 60),  "palette": "burnt orange and copper", "avoid": "blue, green, purple, dark or black background"},
+    {"id": "burgundy", "name": "Burgundy",      "panel": (75, 20, 35),   "accent": (244, 114, 182), "palette": "burgundy wine and blush pink", "avoid": "green, blue, yellow, dark or black background"},
+    {"id": "charcoal", "name": "Charcoal Gold", "panel": (28, 28, 32),   "accent": (250, 204, 21),  "palette": "charcoal black and gold", "avoid": "neon green, neon pink, dark gray background"},
+    {"id": "steel",    "name": "Steel Blue",    "panel": (35, 60, 85),   "accent": (125, 211, 252), "palette": "steel blue and ice blue", "avoid": "red, orange, yellow, dark or black background"},
 ]
 THEME_MAP = {t["id"]: t for t in THEMES}
 
@@ -45,21 +45,16 @@ THEME_MAP = {t["id"]: t for t in THEMES}
 # This fixed template is what keeps every image in the SAME design language,
 # exactly like your reference: 3D isometric stack + floating icon cards.
 STYLE_LOCK = (
-    "Bright ultra-detailed 3D isometric illustration, premium tech blog hero artwork, "
-    "isometric view from slightly above. "
-    "At the center: a tall layered 3D platform stack of 4 to 5 distinct coloured layers "
-    "standing on a glowing rectangular base. "
-    "Around it: six floating rounded-square white icon cards showing database, cloud, gear, "
-    "application window, server rack and microchip icons, each connected to the central "
-    "stack by glowing translucent curved tubes. "
-    "In the lower foreground: a small open laptop and a tablet displaying network diagrams. "
-    "Setting: bright clean white studio environment, soft daylight, gentle soft shadows "
-    "under the objects. "
-    "Colour scheme: {palette} as the dominant accent colours on white and very light grey surfaces. "
-    "Style: clean minimal premium SaaS 3D render, crisp edges, intricate detail, "
-    "professional corporate illustration. "
+    "Isometric 3D illustration, corporate infographic style, bright white background. "
+    "A technology platform visualized as a layered cake: 4 to 5 wide flat rectangular slabs "
+    "stacked vertically, alternating {palette} and white, centered on a subtle round platform. "
+    "A few small white square icon tiles float around the stack, each carrying a simple "
+    "{palette} pictogram of a database, a cloud, a gear or a server. "
+    "Clean, sharp, detailed professional 3D render, soft daylight, subtle shadows. "
+    "Strict color scheme: {palette} with white and light gray only — no other colors. "
     "Visual topic: {topic}. "
-    "Absolutely no text, no letters, no words, no numbers, no watermark, no logo, no blur."
+    "Absolutely no text, no letters, no words, no numbers, no watermark, no logo. "
+    "Avoid: {avoid}."
 )
 
 STOPWORDS = set(
@@ -86,7 +81,8 @@ def extract_keywords(title, max_words=8):
 
 def build_prompt(title, theme, visual_hint=None):
     topic = visual_hint.strip() if visual_hint and visual_hint.strip() else extract_keywords(title)
-    return STYLE_LOCK.format(topic=topic, palette=theme["palette"])
+    return STYLE_LOCK.format(topic=topic, palette=theme["palette"],
+                             avoid=theme.get("avoid", "dark background"))
 
 
 # ------------------------------------------------------------------ fonts ---

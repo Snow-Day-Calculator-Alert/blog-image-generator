@@ -33,7 +33,8 @@ with st.sidebar:
         gemini_key = st.text_input("Gemini API key", type="password",
                                    help="Free key from Google AI Studio")
     base_seed = st.number_input("Base seed (same seed = same composition)",
-                                min_value=0, max_value=999999, value=42)
+                                min_value=0, max_value=999999, value=501)
+    st.caption("💡 Tip: illustration pasand na aaye to seed badal kar dobara Generate dabao — har seed nayi composition deta hai.")
 
 st.subheader("Blog post")
 title = st.text_input("Blog title", "Inside SOA OS23: A New Perspective on Software Architecture")
