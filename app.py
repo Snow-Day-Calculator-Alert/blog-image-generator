@@ -30,8 +30,24 @@ with st.sidebar:
                         format_func=lambda x: "Pollinations (free, no key)" if x == "pollinations" else "Gemini (free AI Studio key)")
     gemini_key = ""
     if provider == "gemini":
-        gemini_key = st.text_input("Gemini API key", type="password",
+        saved_key = st.query_params.get("gemini_key", "")
+        gemini_key = st.text_input("Gemini API key", type="password", value=saved_key,
                                    help="Free key from Google AI Studio")
+        b1, b2 = st.columns(2)
+        with b1:
+            if st.button("💾 Save key"):
+                if gemini_key.strip():
+                    st.query_params["gemini_key"] = gemini_key.strip()
+                    st.success("Key is URL mein save ho gayi — is page ko bookmark kar lo.")
+                else:
+                    st.warning("Pehle key paste karo, phir Save dabao.")
+        with b2:
+            if st.button("🗑 Forget key"):
+                if "gemini_key" in st.query_params:
+                    del st.query_params["gemini_key"]
+                st.rerun()
+        st.caption("⚠️ Key sirf is URL mein mehfooz hoti hai (kisi server par nahi). "
+                   "Ye link kisi se share na karo — jis ke paas link hoga wo tumhari key use kar sakega.")
     base_seed = st.number_input("Base seed (same seed = same composition)",
                                 min_value=0, max_value=999999, value=501)
     st.caption("💡 Tip: illustration pasand na aaye to seed badal kar dobara Generate dabao — har seed nayi composition deta hai.")
