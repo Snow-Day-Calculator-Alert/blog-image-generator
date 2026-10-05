@@ -1,4 +1,5 @@
 """Web UI: run with  streamlit run app.py"""
+# v1.5 — providers: Pollinations (free) + Gemini + Hugging Face (free token)
 import io
 import os
 
