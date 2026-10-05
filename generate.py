@@ -14,8 +14,9 @@ def main():
     ap.add_argument("--subtitle", default="")
     ap.add_argument("--visual-hint", default="", help="Custom visual keywords")
     ap.add_argument("--seed", type=int, default=None, help="Base seed for reproducibility")
-    ap.add_argument("--provider", default="pollinations", choices=["pollinations", "gemini"])
+    ap.add_argument("--provider", default="pollinations", choices=["pollinations", "gemini", "huggingface"])
     ap.add_argument("--gemini-key", default=None, help="Free Google AI Studio key")
+    ap.add_argument("--hf-token", default=None, help="Free Hugging Face token (huggingface.co/settings/tokens)")
     ap.add_argument("--model", default="flux", choices=["flux", "turbo"],
                     help="Pollinations model (turbo = faster)")
     ap.add_argument("--size", type=int, default=1024, help="AI square size (smaller = faster)")
@@ -30,7 +31,7 @@ def main():
         layout=args.layout, subtitle=args.subtitle,
         visual_hint=args.visual_hint or None, base_seed=args.seed,
         provider=args.provider, size=args.size, model=args.model,
-        api_key=args.gemini_key, sizes=args.sizes,
+        api_key=args.gemini_key or args.hf_token, sizes=args.sizes,
     )
     print("Prompt:", prompt[:120], "...")
     for p in paths:

@@ -162,12 +162,39 @@ def fetch_gemini(prompt, seed, api_key):
     raise RuntimeError(f"Gemini failed: {last_err}")
 
 
+HF_IMAGE_MODEL = "black-forest-labs/FLUX.1-schnell"
+
+
+def fetch_hf(prompt, seed, api_token, model=HF_IMAGE_MODEL):
+    """Hugging Face Inference API — free token, no billing needed."""
+    url = f"https://router.huggingface.co/hf-inference/models/{model}"
+    headers = {"Authorization": f"Bearer {api_token}"}
+    payload = {"inputs": prompt, "parameters": {"seed": seed}}
+    last_err = "unknown"
+    for _ in range(2):
+        try:
+            r = requests.post(url, headers=headers, json=payload, timeout=240)
+            ctype = r.headers.get("Content-Type", "")
+            if r.status_code == 200 and ctype.startswith("image"):
+                return Image.open(io.BytesIO(r.content)).convert("RGB")
+            last_err = f"HTTP {r.status_code}: {r.text[:200]}"
+        except Exception as e:  # noqa: BLE001
+            last_err = str(e)
+        time.sleep(3)
+    raise RuntimeError(f"Hugging Face inference failed: {last_err}")
+
+
 def generate_illustration(prompt, seed, provider="pollinations", size=1024, model="flux", api_key=None):
     if provider == "gemini":
         key = api_key or os.environ.get("GEMINI_API_KEY")
         if not key:
             raise RuntimeError("GEMINI_API_KEY not set (env var or --gemini-key).")
         return fetch_gemini(prompt, seed, key)
+    if provider == "huggingface":
+        key = api_key or os.environ.get("HF_TOKEN")
+        if not key:
+            raise RuntimeError("HF_TOKEN not set — free token at huggingface.co/settings/tokens (or --hf-token).")
+        return fetch_hf(prompt, seed, key)
     return fetch_pollinations(prompt, seed, size=size, model=model)
 
 

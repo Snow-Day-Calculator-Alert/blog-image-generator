@@ -26,28 +26,35 @@ with st.sidebar:
                                                   "both": "Both sizes"}[x])
     variants = st.slider("Variants to generate", 1, 4, 2)
     provider = st.radio("Image provider",
-                        ["pollinations", "gemini"],
-                        format_func=lambda x: "Pollinations (free, no key)" if x == "pollinations" else "Gemini (free AI Studio key)")
-    gemini_key = ""
-    if provider == "gemini":
-        saved_key = st.query_params.get("gemini_key", "")
-        gemini_key = st.text_input("Gemini API key", type="password", value=saved_key,
-                                   help="Free key from Google AI Studio")
+                        ["pollinations", "gemini", "huggingface"],
+                        format_func=lambda x: {"pollinations": "Pollinations (free, no key)",
+                                               "gemini": "Gemini (AI Studio key)",
+                                               "huggingface": "Hugging Face (free token)"}[x])
+    api_key = ""
+    if provider in ("gemini", "huggingface"):
+        if provider == "gemini":
+            label, param = "Gemini API key", "gemini_key"
+            help_text = "Key from Google AI Studio (aistudio.google.com/apikey)"
+        else:
+            label, param = "Hugging Face token", "hf_token"
+            help_text = "Free token from huggingface.co/settings/tokens (read access is enough)"
+        saved = st.query_params.get(param, "")
+        api_key = st.text_input(label, type="password", value=saved, help=help_text)
         b1, b2 = st.columns(2)
         with b1:
-            if st.button("💾 Save key"):
-                if gemini_key.strip():
-                    st.query_params["gemini_key"] = gemini_key.strip()
+            if st.button("💾 Save key", key=f"save_{param}"):
+                if api_key.strip():
+                    st.query_params[param] = api_key.strip()
                     st.success("Key is URL mein save ho gayi — is page ko bookmark kar lo.")
                 else:
                     st.warning("Pehle key paste karo, phir Save dabao.")
         with b2:
-            if st.button("🗑 Forget key"):
-                if "gemini_key" in st.query_params:
-                    del st.query_params["gemini_key"]
+            if st.button("🗑 Forget key", key=f"forget_{param}"):
+                if param in st.query_params:
+                    del st.query_params[param]
                 st.rerun()
         st.caption("⚠️ Key sirf is URL mein mehfooz hoti hai (kisi server par nahi). "
-                   "Ye link kisi se share na karo — jis ke paas link hoga wo tumhari key use kar sakega.")
+                   "Ye link kisi se share na karo — jis ke paas link hoga wo tumhari key/token use kar sakega.")
     base_seed = st.number_input("Base seed (same seed = same composition)",
                                 min_value=0, max_value=999999, value=501)
     st.caption("💡 Tip: illustration pasand na aaye to seed badal kar dobara Generate dabao — har seed nayi composition deta hai.")
@@ -76,7 +83,7 @@ if st.button("🚀 Generate", type="primary", disabled=not title.strip()):
                 visual_hint=visual_hint,
                 base_seed=int(base_seed),
                 provider=provider,
-                api_key=gemini_key or None,
+                api_key=api_key or None,
                 custom_image=custom_image,
                 sizes=sizes,
             )
