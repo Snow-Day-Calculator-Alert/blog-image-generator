@@ -29,7 +29,15 @@ python generate.py --title "Inside SOA OS23: A New Perspective on Software Archi
   --theme navy --variants 3
 ```
 
-Images `output/` folder mein `1200x630` PNG mein save hoti hain.
+Images `output/` folder mein PNG mein save hoti hain.
+
+## Sizes
+
+- **Desktop**: `1200x629` — half-half layout (illustration | text panel)
+- **Mobile**: `450x236` — wahi half-half design, chhoti screen ke liye
+- Web UI mein "Image size" se Desktop / Mobile / **Both** chuno —
+  Both par ek click mein dono sizes ban jati hain.
+- CLI: `python generate.py --title "..." --sizes desktop mobile`
 
 ## Features
 

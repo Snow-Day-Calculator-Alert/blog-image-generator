@@ -224,32 +224,59 @@ def draw_wrapped_title(draw, text, box, font_path, max_size, min_size, fill):
         y += lh
 
 
-def compose(title, illustration, theme, layout="right", subtitle=""):
-    """Final 1200x630 blog graphic: AI illustration + dark panel + title."""
-    W, H = 1200, 630
+# Output sizes: desktop + mobile, both half-half (illustration | text panel).
+SIZES = {
+    "desktop": (1200, 629),
+    "mobile": (450, 236),
+}
+
+
+def compose(title, illustration, theme, layout="right", subtitle="", size="desktop"):
+    """Blog graphic: AI illustration + dark panel + Poppins title.
+
+    size="desktop" -> 1200x629, size="mobile" -> 450x236.
+    All geometry scales from the 1200x630 reference design.
+    """
+    W, H = SIZES.get(size, SIZES["desktop"])
     fonts = ensure_fonts()
     canvas = Image.new("RGB", (W, H), "white")
     d = ImageDraw.Draw(canvas)
     panel, accent = theme["panel"], theme["accent"]
+    s = H / 630  # scale factor vs the reference design
 
-    if layout == "right":  # <-- matches your reference image
-        canvas.paste(crop_fill(illustration, 750, H), (0, 0))
-        d.rectangle([750, 0, W, H], fill=panel)
-        d.rectangle([750, 0, 758, H], fill=accent)          # accent edge
-        d.rounded_rectangle([786, 148, 852, 160], radius=6, fill=accent)
-        box = (786, 190, 1164, 500) if not subtitle else (786, 180, 1164, 460)
-        draw_wrapped_title(d, title, box, fonts["bold"], 62, 30, "white")
+    def sc(v, minimum=1):
+        return max(minimum, int(round(v * s)))
+
+    if layout == "right":  # <-- matches your reference image (half-half)
+        # desktop keeps the approved 62.5/37.5 split, mobile uses 55/45
+        ill_w = int(W * (0.625 if size == "desktop" else 0.55))
+        canvas.paste(crop_fill(illustration, ill_w, H), (0, 0))
+        d.rectangle([ill_w, 0, W, H], fill=panel)
+        d.rectangle([ill_w, 0, ill_w + sc(8), H], fill=accent)   # accent edge
+        pad = sc(36)
+        x0, x1 = ill_w + pad, W - pad
+        d.rounded_rectangle([x0, sc(148), x0 + sc(66), sc(160)],
+                            radius=sc(6), fill=accent)
         if subtitle:
-            sf = ImageFont.truetype(fonts["regular"], 26)
-            d.text((786, 486), subtitle, font=sf, fill=(200, 210, 225))
+            y0, box_h = sc(180), sc(460) - sc(180)
+        else:
+            y0, box_h = sc(190), sc(500) - sc(190)
+        draw_wrapped_title(d, title, (x0, y0, x1, y0 + box_h),
+                           fonts["bold"], sc(62, 14), sc(30, 10), "white")
+        if subtitle:
+            sf = ImageFont.truetype(fonts["regular"], sc(26, 10))
+            d.text((x0, y0 + box_h + sc(16)), subtitle,
+                   font=sf, fill=(200, 210, 225))
     else:  # title strip along the bottom
-        canvas.paste(crop_fill(illustration, W, 400), (0, 0))
-        d.rectangle([0, 400, W, H], fill=panel)
-        d.rounded_rectangle([60, 440, 126, 452], radius=6, fill=accent)
-        draw_wrapped_title(d, title, (60, 470, 1140, 606), fonts["bold"], 54, 28, "white")
-        if subtitle:
-            sf = ImageFont.truetype(fonts["regular"], 24)
-            d.text((60, 600 - 30), subtitle, font=sf, fill=(200, 210, 225))
+        ill_h = int(H * 0.635)
+        canvas.paste(crop_fill(illustration, W, ill_h), (0, 0))
+        d.rectangle([0, ill_h, W, H], fill=panel)
+        pad = sc(60)
+        d.rounded_rectangle([pad, ill_h + sc(40), pad + sc(66), ill_h + sc(52)],
+                            radius=sc(6), fill=accent)
+        y0 = ill_h + sc(70)
+        draw_wrapped_title(d, title, (pad, y0, W - pad, H - sc(24)),
+                           fonts["bold"], sc(54, 14), sc(28, 10), "white")
     return canvas
 
 
@@ -262,11 +289,13 @@ def slugify(text):
 def generate_batch(title, theme_id="navy", variants=3, layout="right", subtitle="",
                    visual_hint=None, base_seed=None, provider="pollinations",
                    size=1024, model="flux", api_key=None, custom_image=None,
-                   out_dir=None):
-    """Generate `variants` finished graphics. Returns list of saved paths."""
+                   out_dir=None, sizes=("desktop",)):
+    """Generate `variants` finished graphics in each requested output size.
+    Returns list of saved paths."""
     theme = THEME_MAP.get(theme_id, THEME_MAP["navy"])
     out_dir = out_dir or OUT_DIR
     os.makedirs(out_dir, exist_ok=True)
+    sizes = [s for s in sizes if s in SIZES] or ["desktop"]
     prompt = build_prompt(title, theme, visual_hint)
     base_seed = base_seed if base_seed is not None else int.from_bytes(
         os.urandom(4), "big") % 100000
@@ -279,9 +308,11 @@ def generate_batch(title, theme_id="navy", variants=3, layout="right", subtitle=
         else:
             ill = generate_illustration(prompt, seed, provider=provider,
                                         size=size, model=model, api_key=api_key)
-        final = compose(title, ill, theme, layout=layout, subtitle=subtitle)
-        fname = f"{slugify(title)}_{theme_id}_{seed}.png"
-        path = os.path.join(out_dir, fname)
-        final.save(path)
-        paths.append(path)
+        for size_name in sizes:  # one illustration, rendered at every size
+            final = compose(title, ill, theme, layout=layout,
+                            subtitle=subtitle, size=size_name)
+            fname = f"{slugify(title)}_{theme_id}_{size_name}_{seed}.png"
+            path = os.path.join(out_dir, fname)
+            final.save(path)
+            paths.append(path)
     return paths, prompt

@@ -19,6 +19,11 @@ with st.sidebar:
     layout = st.radio("Layout",
                       ["right", "bottom"],
                       format_func=lambda x: "Title on right (reference style)" if x == "right" else "Title strip at bottom")
+    size_choice = st.radio("Image size",
+                           ["desktop", "mobile", "both"],
+                           format_func=lambda x: {"desktop": "Desktop (1200×629)",
+                                                  "mobile": "Mobile (450×236)",
+                                                  "both": "Both sizes"}[x])
     variants = st.slider("Variants to generate", 1, 4, 2)
     provider = st.radio("Image provider",
                         ["pollinations", "gemini"],
@@ -40,6 +45,7 @@ uploaded = st.file_uploader("…or use your OWN base image instead of AI (option
 
 if st.button("🚀 Generate", type="primary", disabled=not title.strip()):
     theme_id = THEMES[theme_idx]["id"]
+    sizes = ["desktop", "mobile"] if size_choice == "both" else [size_choice]
     custom_image = Image.open(uploaded) if uploaded else None
     progress = st.progress(0, text="Working…")
     try:
@@ -55,6 +61,7 @@ if st.button("🚀 Generate", type="primary", disabled=not title.strip()):
                 provider=provider,
                 api_key=gemini_key or None,
                 custom_image=custom_image,
+                sizes=sizes,
             )
         progress.progress(1.0, text="Done!")
         st.success(f"Generated {len(paths)} image(s) in the **{THEMES[theme_idx]['name']}** theme.")
