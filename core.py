@@ -164,12 +164,6 @@ def fetch_gemini(prompt, seed, api_key):
         except Exception as e:  # noqa: BLE001
             last_err = f"{model}: {e}"
     raise RuntimeError(f"Gemini failed: {last_err}")
-            last_err = str(e)
-        time.sleep(3)
-    raise RuntimeError(f"Pollinations failed after retries: {last_err}")
-
-
-
 
 
 def generate_illustration(prompt, seed, provider="pollinations", size=1024, model="flux", api_key=None):
